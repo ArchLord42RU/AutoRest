@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using AutoRestClient.Tests.HttpBin;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RestSharp.AutoClient.Examples.Di.Microsoft
 {
@@ -7,17 +7,11 @@ namespace RestSharp.AutoClient.Examples.Di.Microsoft
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
-            
-            /*var serviceCollection = new ServiceCollection();
+            var serviceCollection = new ServiceCollection();
 
             var provider = serviceCollection.BuildServiceProvider();
 
-            var client = provider.GetRequiredService<ILdeClient>();*/
+            var client = provider.GetRequiredService<IHttpBinAnythingClient>();
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
     }
 }

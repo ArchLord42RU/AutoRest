@@ -9,8 +9,4 @@
       <ProjectReference Include="..\RestSharp.AutoClient.Tests\RestSharp.AutoClient.Tests.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
-    </ItemGroup>
-
 </Project>
