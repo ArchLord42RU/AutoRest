@@ -17,7 +17,7 @@ namespace AutoRestClient.Tests.HttpBin
         [AddHeader("x-header-1", "x-header-value")]
         [FromBody]
         Task<AnythingResponseBody> PostWithBindingsAsync(
-            [ToQuery("queryParam")] string queryValue,
+            [ToQuery("queryParam", true)] string queryValue,
             [ToHeader("x-header-2")] string headerValue);
 
         [HttpPost]

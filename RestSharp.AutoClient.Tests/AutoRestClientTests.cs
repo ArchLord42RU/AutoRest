@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoRestClient.Client;
+using AutoRestClient.Tests.Asserts;
 using AutoRestClient.Tests.HttpBin;
 using AutoRestClient.Tests.HttpBin.Models;
 using NUnit.Framework;
@@ -53,25 +54,26 @@ namespace AutoRestClient.Tests
         }
 
         [Test]
-        public async Task Should_Check_Params_Binding_Binding()
+        public async Task Should_Check_Params_Binding()
         {
             var response = await _anythingClient.PostWithBindingsAsync(QueryParamValue, HeaderParamValue);
             
             Assert.AreEqual("POST", response.Method);
-            
-            Assert.True(response.Args.Any(x 
-                => x.Key.Equals("queryParam", StringComparison.InvariantCultureIgnoreCase) && x.Value == QueryParamValue));
-            
-            Assert.True(response.Headers.Any(x 
-                => x.Key.Equals("x-header-1", StringComparison.InvariantCultureIgnoreCase) && x.Value == HeaderParamValue));
-            
-            Assert.True(response.Headers.Any(x 
-                => x.Key.Equals("x-header-2", StringComparison.InvariantCultureIgnoreCase) && x.Value == HeaderParamValue));
-            
-            Assert.True(response.Headers.Any(x 
-                => x.Key.Equals("x-header-3", StringComparison.InvariantCultureIgnoreCase) && x.Value == HeaderParamValue));
-            
+
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Args, "queryParam", QueryParamValue);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-1", HeaderParamValue);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-2", HeaderParamValue);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-3", HeaderParamValue);
+    
             Assert.True(response.Url.Contains("/foo"));
+        }
+        
+        [Test]
+        public async Task Should_Check_Optional_Params_Binding()
+        {
+            var response = await _anythingClient.PostWithBindingsAsync(default, HeaderParamValue);
+
+            CustomAsserts.DictionaryDoesNotContainsKey(response.Args, "queryParam");
         }
 
         [Test]
@@ -97,14 +99,9 @@ namespace AutoRestClient.Tests
 
             var response = await _anythingClient.PostJson(req);
             
-            Assert.True(response.Body.Args.Any(x 
-                => x.Key.Equals("queryParam", StringComparison.InvariantCultureIgnoreCase) && x.Value == QueryParamValue));
-            
-            Assert.True(response.Body.Headers.Any(x 
-                => x.Key.Equals("x-header-1", StringComparison.InvariantCultureIgnoreCase) && x.Value == HeaderParamValue));
-            
-            Assert.True(response.Body.Json.Any(x => x.Key == "key" && x.Value == "value"));
-            
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Args, "queryParam", QueryParamValue);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Headers, "X-Header-1", HeaderParamValue);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Json, "key", "value");
             Assert.AreEqual(false, string.IsNullOrEmpty(response.Server));
         }
     }

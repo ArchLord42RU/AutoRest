@@ -8,7 +8,7 @@ namespace AutoRestClient.Tests.HttpBin.Models
         [ToHeader("x-header-1")]
         public string Header { get; set; }
         
-        [ToQuery("queryParam")]
+        [ToQuery("queryParam", true)]
         public string QueryParam { get; set; }
         
         [ToJsonBody]
