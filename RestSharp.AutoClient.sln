@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{1A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RestSharp.AutoClient.Examples.Di.Microsoft", "RestSharp.AutoClient.Examples.Di.Microsoft\RestSharp.AutoClient.Examples.Di.Microsoft.csproj", "{E3979BDC-9C0E-4F03-A9C2-FB6B7413F51D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generators", "Generators", "{DBD7F10B-B0EC-4602-946A-23B647DEC825}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

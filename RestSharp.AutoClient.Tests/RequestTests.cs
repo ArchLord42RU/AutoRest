@@ -1,0 +1,67 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoRestClient.Tests.Asserts;
+using AutoRestClient.Tests.HttpBin;
+using AutoRestClient.Tests.HttpBin.Models;
+using NUnit.Framework;
+
+namespace AutoRestClient.Tests
+{
+    public class RequestTests
+    {
+        [Test]
+        public async Task Should_Check_Params_Binding()
+        {
+            const string queryParam = HttpClientFixture.QueryParamValue;
+            const string headerParam = HttpClientFixture.HeaderParamValue;
+            
+            var response = await GetClient().PostWithBindingsAsync(queryParam, headerParam);
+            
+            Assert.AreEqual("POST", response.Method);
+
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Args, "queryParam", queryParam);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-1", headerParam);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-2", headerParam);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Headers, "X-Header-3", headerParam);
+    
+            Assert.True(response.Url.Contains("/foo"));
+        }
+        
+        [Test]
+        public async Task Should_Check_Optional_Params_Binding()
+        {
+            const string headerParam = HttpClientFixture.HeaderParamValue;
+            
+            var response = await GetClient().PostWithBindingsAsync(default, headerParam);
+
+            CustomAsserts.DictionaryDoesNotContainsKey(response.Args, "queryParam");
+        }
+        
+        [Test]
+        public async Task Should_Post_Bound_Request()
+        {
+            const string queryParam = HttpClientFixture.QueryParamValue;
+            const string headerParam = HttpClientFixture.HeaderParamValue;
+            
+            var req = new AnythingRequest
+            {
+                Header = headerParam,
+                QueryParam = queryParam,
+                Body = new Dictionary<string, string>
+                {
+                    {"key", "value"}
+                }
+            };
+
+            var response = await GetClient().PostJson(req);
+            
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Args, "queryParam", queryParam);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Headers, "X-Header-1", headerParam);
+            CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Json, "key", "value");
+            Assert.AreEqual(false, string.IsNullOrEmpty(response.Server));
+        }
+
+        private static IHttpBinAnythingClient GetClient()
+            => HttpClientFixture.GetHttpBinClient();
+    }
+}
