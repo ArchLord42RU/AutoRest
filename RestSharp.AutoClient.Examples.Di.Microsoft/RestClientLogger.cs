@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace RestSharp.AutoClient.Examples.Di.Microsoft
 {
-    public class RestClientLogger: IRestCallMiddleware
+    public class RestClientLogger: RestCallMiddleware
     {
         private readonly ILogger _logger;
 
@@ -12,8 +12,8 @@ namespace RestSharp.AutoClient.Examples.Di.Microsoft
         {
             _logger = logger;
         }
-        
-        public void Invoke(ExecutionContext context, Action<ExecutionContext> next)
+
+        public override void Invoke(ExecutionContext context, Action<ExecutionContext> next)
         {
             using var scope = _logger.BeginScope(context.ClientType);
             _logger.LogInformation(context.Request.Resource);

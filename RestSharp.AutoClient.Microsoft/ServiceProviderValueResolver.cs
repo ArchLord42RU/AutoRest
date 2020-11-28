@@ -12,11 +12,6 @@ namespace AutoRestClient.Microsoft
         {
             _provider = provider;
         }
-        
-        public TValue Resolve<TValue>()
-        {
-            return _provider.GetRequiredService<TValue>();
-        }
 
         public object Resolve(Type objectType)
         {

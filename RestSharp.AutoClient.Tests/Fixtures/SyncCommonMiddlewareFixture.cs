@@ -3,13 +3,14 @@ using AutoRestClient.Processing;
 
 namespace AutoRestClient.Tests.Fixtures
 {
-    public class SyncCommonMiddlewareFixture: IRestCallMiddleware
+    public class SyncCommonMiddlewareFixture: RestCallMiddleware
     {
         public static bool Called { get; set; }
         
-        public void Invoke(ExecutionContext context, Action<ExecutionContext> next)
+        public override void Invoke(ExecutionContext context, Action<ExecutionContext> next)
         {
             Called = true;
+            next(context);
         }
     }
 }

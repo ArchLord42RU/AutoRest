@@ -19,13 +19,8 @@ namespace AutoRestClient.Attributes.Response
 
             foreach (var prop in props)
             {
-                var propContext = new ResponseParameterBindingContext
-                {
-                    Deserializer = context.Deserializer,
-                    Response = context.Response,
-                    ReturnValue = prop.GetValue(retVal),
-                    ReturnValueType = prop.PropertyType
-                };
+                var propContext = new ResponseParameterBindingContext(context.Response, context.Deserializer,
+                    prop.PropertyType, prop.GetValue(retVal));
 
                 await ProcessingUtils.ApplyResponseParameterBindingAttributes(prop, propContext);
 

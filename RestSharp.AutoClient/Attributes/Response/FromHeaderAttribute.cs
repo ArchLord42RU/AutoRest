@@ -15,7 +15,7 @@ namespace AutoRestClient.Attributes.Response
 
         public override void Bind(ResponseParameterBindingContext context)
         {
-            var header = context.Response.Headers.FirstOrDefault(
+            var header = context.Response?.Headers.FirstOrDefault(
                 x => x.Name?.Equals(_name, StringComparison.CurrentCultureIgnoreCase) ?? false);
             
             if (header == null)

@@ -81,10 +81,10 @@ namespace AutoRestClient.Interceptors
             {
                 switch (middleware)
                 {
-                    case IAsyncRestCallMiddleware asyncMiddleware:
+                    case AsyncRestCallMiddleware asyncMiddleware:
                         _pipeline.Enqueue(async context => await asyncMiddleware.InvokeAsync(context, NextAsync));
                         break;
-                    case IRestCallMiddleware syncMiddleware:
+                    case RestCallMiddleware syncMiddleware:
                         _pipeline.Enqueue(context =>
                         {
                             syncMiddleware.Invoke(context, NextSync);
@@ -122,13 +122,8 @@ namespace AutoRestClient.Interceptors
 
         private static async Task<TResponse> GetReturnValue<TResponse>(IRestClient client, IRestResponse response, IInvocation invocation)
         {
-            var context = new ResponseParameterBindingContext
-            {
-                Deserializer = new ResponseDeserializer(client),
-                Response = response,
-                ReturnValue = default(TResponse),
-                ReturnValueType = typeof(TResponse)
-            };
+            var context = new ResponseParameterBindingContext(response, new ResponseDeserializer(client),
+                typeof(TResponse), default(TResponse));
 
             await ProcessingUtils.ApplyResponseParameterBindingAttributes(invocation.Method, context);
             

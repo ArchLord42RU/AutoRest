@@ -1,16 +1,26 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using RestSharp;
 
 namespace AutoRestClient.Processing.Response
 {
     public class ResponseParameterBindingContext
     {
-        public IRestResponse Response { get; internal set; }
+        public IRestResponse? Response { get; }
         
-        public IResponseDeserializer Deserializer { get; internal set; }
+        public IResponseDeserializer Deserializer { get; }
+
+        public Type ReturnValueType { get; }
         
-        public Type ReturnValueType { get; set; }
+        public object? ReturnValue { get; set; }
         
-        public object ReturnValue { get; set; }
+        public ResponseParameterBindingContext(IRestResponse? response, IResponseDeserializer deserializer,
+            Type returnValueType, object? returnValue)
+        {
+            Response = response;
+            Deserializer = deserializer;
+            ReturnValueType = returnValueType;
+            ReturnValue = returnValue;
+        }
     }
 }

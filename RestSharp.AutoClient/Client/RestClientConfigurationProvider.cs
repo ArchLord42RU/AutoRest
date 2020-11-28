@@ -27,26 +27,32 @@ namespace AutoRestClient.Client
         
         private static IEnumerable<object> ScanForMiddlewares(RestClientConfiguration<TClient> configuration, IValueResolver valueResolver)
         {
-            var middlewares = configuration.Middlewares?.ToList() ?? new List<object>();
+            var middlewares = configuration.Middlewares.ToList();
             
-            middlewares.AddRange(from type in configuration.MiddlewareTypes ?? new List<Type>() select valueResolver.Resolve(type));
+            middlewares.AddRange(from type in configuration.MiddlewareTypes select valueResolver.Resolve(type));
 
             var supportedTypes = new[]
             {
-                typeof(IRestCallMiddleware),
-                typeof(IRestCallMiddleware<TClient>),
-                typeof(IAsyncRestCallMiddleware),
-                typeof(IAsyncRestCallMiddleware<TClient>)
+                typeof(RestCallMiddleware),
+                typeof(RestCallMiddleware<TClient>),
+                typeof(AsyncRestCallMiddleware),
+                typeof(AsyncRestCallMiddleware<TClient>)
             };
             
-            var typesFromAssemblies = configuration.AssembliesToScan?
+            var typesFromAssemblies = configuration.AssembliesToScan
                 .Where(x => x.IsDynamic == false)
-                .SelectMany(x => x.GetTypes().Where(type => !type.IsAbstract && supportedTypes.Any(supType => supType.IsAssignableFrom(type))));
+                .SelectMany(x => x.GetTypes().Where(type => !type.IsAbstract && ImplementOneOf(type, supportedTypes)));
 
-            if (typesFromAssemblies != null)
-                middlewares.AddRange(from type in typesFromAssemblies select valueResolver.Resolve(type));
-            
+            middlewares.AddRange(from type in typesFromAssemblies select valueResolver.Resolve(type));
+
             return middlewares;
+        }
+
+        private static bool ImplementOneOf(Type type, IEnumerable<Type> implementTypes)
+        {
+            if (type?.BaseType?.IsGenericType ?? false)
+                return implementTypes.Any(x => x.IsGenericType && x.IsAssignableFrom(type));
+            return implementTypes.Any(x => x.IsAssignableFrom(type));
         }
     }
 }

@@ -24,22 +24,26 @@ namespace AutoRestClient.Client
         
         internal List<Type> MiddlewareTypes { get; private set; }
         
+        public RestClientConfiguration()
+        {
+            AssembliesToScan = new List<Assembly>();
+            Middlewares = new List<object>();
+            MiddlewareTypes = new List<Type>();
+        }
+        
         public void AddMiddleware(object middleware)
         {
-            var middlewares = Middlewares ?? new List<object>();
-            middlewares.Add(middleware);
+            Middlewares.Add(middleware);
         }
         
         public void AddMiddleware(Type middleware)
         {
-            var middlewareTypes = MiddlewareTypes ?? new List<Type>();
-            middlewareTypes.Add(middleware);
+            MiddlewareTypes.Add(middleware);
         }
 
-        public void AddMiddlewares(Assembly[] assemblies)
+        public void AddMiddlewares(IEnumerable<Assembly> assemblies)
         {
-            var assembliesToScan = AssembliesToScan ?? new List<Assembly>();
-            assembliesToScan.AddRange(assemblies);
+            AssembliesToScan.AddRange(assemblies);
         }
     }
 }

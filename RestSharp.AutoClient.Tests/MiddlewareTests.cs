@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using AutoRestClient.Processing;
 using AutoRestClient.Tests.Fixtures;
 using AutoRestClient.Tests.HttpBin;
-using AutoRestClient.Tests.HttpClients.FakeClient;
 using Moq;
 using NUnit.Framework;
 
@@ -33,20 +32,19 @@ namespace AutoRestClient.Tests
             
             Assert.True(SyncCommonMiddlewareFixture.Called);
             Assert.True(AsyncCommonMiddlewareFixture.Called);
+            Assert.False(FakeClientMiddleware.Called);
         }
 
         [Test]
         public async Task Should_Check_Middlewares_Calling()
         {
-            var commonMiddleware = new Mock<IRestCallMiddleware>();
-            var typedMiddleware = new Mock<IRestCallMiddleware<IHttpBinAnythingClient>>();
-            var neverCalledMiddleware = new Mock<IRestCallMiddleware<IFakeHttpClient>>();
-            
+            var commonMiddleware = MakeMiddlewareMock<RestCallMiddleware>();
+            var typedMiddleware = MakeMiddlewareMock<RestCallMiddleware<IHttpBinAnythingClient>>();
+
             var client = HttpClientFixture.GetHttpBinClient(configuration =>
             {
-                configuration.AddMiddleware(commonMiddleware);
-                configuration.AddMiddleware(typedMiddleware);
-                configuration.AddMiddleware(neverCalledMiddleware);
+                configuration.AddMiddleware(commonMiddleware.Object);
+                configuration.AddMiddleware(typedMiddleware.Object);
                 configuration.AddMiddleware(typeof(AsyncCommonMiddlewareFixture));
             });
 
@@ -57,11 +55,22 @@ namespace AutoRestClient.Tests
             
             typedMiddleware.Verify(x => x.Invoke(It.IsAny<ExecutionContext>(),
                 It.IsAny<Action<ExecutionContext>>()), Times.Once);
-            
-            neverCalledMiddleware.Verify(x => x.Invoke(It.IsAny<ExecutionContext>(),
-                It.IsAny<Action<ExecutionContext>>()), Times.Never);
 
             Assert.True(AsyncCommonMiddlewareFixture.Called);
+        }
+
+        private static Mock<TMiddleware> MakeMiddlewareMock<TMiddleware>()
+            where TMiddleware : RestCallMiddleware
+        {
+            var mock = new Mock<TMiddleware>();
+            
+            mock.Setup(x => x.Invoke(It.IsAny<ExecutionContext>(), It.IsAny<Action<ExecutionContext>>()))
+                .Callback<ExecutionContext,Action<ExecutionContext>>((context, next) =>
+                {
+                    next(context);
+                });
+
+            return mock;
         }
     }
 }
