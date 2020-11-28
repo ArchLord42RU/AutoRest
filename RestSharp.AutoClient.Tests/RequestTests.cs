@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoRestClient.Tests.Asserts;
+using AutoRestClient.Tests.Fixtures;
 using AutoRestClient.Tests.HttpBin;
 using AutoRestClient.Tests.HttpBin.Models;
 using NUnit.Framework;

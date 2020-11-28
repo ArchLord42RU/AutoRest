@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using AutoRestClient.Tests.Fixtures;
 using AutoRestClient.Tests.HttpBin;
 using NUnit.Framework;
 
