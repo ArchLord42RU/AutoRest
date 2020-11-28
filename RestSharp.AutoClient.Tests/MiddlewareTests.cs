@@ -11,6 +11,13 @@ namespace AutoRestClient.Tests
 {
     public class MiddlewareTests
     {
+        [SetUp]
+        public void Setup()
+        {
+            SyncCommonMiddlewareFixture.Called = false;
+            AsyncCommonMiddlewareFixture.Called = false;
+        }
+        
         [Test]
         public async Task Should_Call_Middlewares_From_Assembly()
         {
@@ -39,6 +46,8 @@ namespace AutoRestClient.Tests
             {
                 configuration.AddMiddleware(commonMiddleware);
                 configuration.AddMiddleware(typedMiddleware);
+                configuration.AddMiddleware(neverCalledMiddleware);
+                configuration.AddMiddleware(typeof(AsyncCommonMiddlewareFixture));
             });
 
             var result = await client.GetHeaderAsync();
@@ -51,6 +60,8 @@ namespace AutoRestClient.Tests
             
             neverCalledMiddleware.Verify(x => x.Invoke(It.IsAny<ExecutionContext>(),
                 It.IsAny<Action<ExecutionContext>>()), Times.Never);
+
+            Assert.True(AsyncCommonMiddlewareFixture.Called);
         }
     }
 }

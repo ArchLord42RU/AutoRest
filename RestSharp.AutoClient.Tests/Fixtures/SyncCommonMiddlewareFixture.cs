@@ -5,7 +5,7 @@ namespace AutoRestClient.Tests.Fixtures
 {
     public class SyncCommonMiddlewareFixture: IRestCallMiddleware
     {
-        public static bool Called { get; private set; }
+        public static bool Called { get; set; }
         
         public void Invoke(ExecutionContext context, Action<ExecutionContext> next)
         {
