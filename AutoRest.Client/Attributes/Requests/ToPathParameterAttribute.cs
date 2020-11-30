@@ -3,12 +3,11 @@ using AutoRest.Client.Processing.Requests;
 
 namespace AutoRest.Client.Attributes.Requests
 {
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public class PathParameterAttribute: RequestParameterBindingAttribute
+    public class ToPathParameterAttribute: RequestParameterBindingAttribute
     {
         private readonly string _paramName;
 
-        public PathParameterAttribute(string paramName = default)
+        public ToPathParameterAttribute(string paramName = default)
         {
             _paramName = paramName;
         }
