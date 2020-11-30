@@ -1,8 +1,10 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AutoRest.Client.Attributes;
 using AutoRest.Client.Client;
 using AutoRest.Client.Processing;
 using AutoRest.Client.Processing.Requests;
@@ -10,30 +12,41 @@ using AutoRest.Client.Processing.Response;
 using Castle.DynamicProxy;
 using RestSharp;
 
-namespace AutoRest.Client.Interceptors
+namespace AutoRest.Client.Proxy
 {
     internal sealed class RestSharpInterceptor<TClient>: IInterceptor
     {
+        private readonly RestClientConfigurationProvider<TClient> _provider;
+        
         private readonly IRestClient _client;
 
         private readonly IEnumerable<object> _middlewares;
 
         private Queue<Func<ExecutionContext, Task>> _pipeline;
 
-        public RestSharpInterceptor(RestClientConfigurationProvider<TClient> configuration)
+        public RestSharpInterceptor(RestClientConfigurationProvider<TClient> provider)
         {
+            _provider = provider;
             _client = new RestClient
             {
-                Authenticator = configuration.Authenticator,
-                BaseUrl = configuration.BaseUri,
-                Proxy = configuration.WebProxy
+                Authenticator = provider.Authenticator,
+                BaseUrl = provider.BaseUri,
+                Proxy = provider.WebProxy
             };
 
-            _middlewares = configuration.Middlewares;
+            _middlewares = provider.Middlewares;
         }
         
         public void Intercept(IInvocation invocation)
         {
+            var prop = GetPropertyOfGetter(invocation);
+            
+            if (prop != null)
+            {
+                invocation.ReturnValue = GetEndpoint(prop, invocation);
+                return;
+            }
+            
             var (isAsync, returnValue) = GetExecutionInfo(invocation.Method);
 
             var methodName = isAsync
@@ -47,6 +60,32 @@ namespace AutoRest.Client.Interceptors
             {
                 invocation
             });
+        }
+
+        private object GetEndpoint(PropertyInfo propertyInfo, IInvocation invocation)
+        {
+            var returnType = invocation.Method.ReturnType;
+            var builderType = typeof(AutoRestClientBuilder<>).MakeGenericType(returnType);
+            var builder = Activator.CreateInstance(builderType);
+
+            var configType = typeof(RestClientConfiguration<>).MakeGenericType(returnType);
+            var config = Activator.CreateInstance(configType, _provider.Configuration);
+
+            var endpointAttribute = propertyInfo.GetCustomAttribute<EndpointAttribute>();
+            
+            var baseConfig = ((RestClientConfiguration)config);
+            baseConfig.BaseUri = new Uri(ProcessingUtils.CombineUrl(baseConfig.BaseUri.ToString(), endpointAttribute?.Route ?? ""));
+
+            ReflectionUtils.InvokeMethod(builder, nameof(AutoRestClientBuilder<object>.WithConfiguration), config);
+            
+            return ReflectionUtils.InvokeMethod(builder, nameof(AutoRestClientBuilder<object>.Build));
+        }
+
+        private static PropertyInfo? GetPropertyOfGetter(IInvocation invocation)
+        {
+            return invocation.Method.DeclaringType?
+                .GetProperties()
+                .FirstOrDefault(x => x.GetGetMethod() == invocation.Method);
         }
 
         private static Tuple<bool, Type> GetExecutionInfo(MethodInfo invocationMethod)

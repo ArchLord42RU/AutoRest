@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using AutoRest.Client.Attributes;
 using AutoRest.Client.Attributes.Requests;
 using AutoRest.Client.Attributes.Response;
 using AutoRest.Client.Tests.HttpClients.HttpBin.Models;
@@ -35,5 +36,8 @@ namespace AutoRest.Client.Tests.HttpClients.HttpBin
         [HttpGet]
         [FromHeader("content-type")]
         Task<string> GetHeaderAsync();
+        
+        [Endpoint("anything")]
+        IAnythingEndpoint AnythingEndpoint { get; set; }
     }
 }

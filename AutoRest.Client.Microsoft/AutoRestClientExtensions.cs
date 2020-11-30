@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new RestClientConfigurationProvider<TClient>(config);
             });
 
-            services.AddTransient(provider => new AutoClientBuilder<TClient>()
+            services.AddTransient(provider => new AutoRestClientBuilder<TClient>()
                 .WithConfiguration(provider.GetRequiredService<IOptions<RestClientConfiguration<TClient>>>().Value).Build());
 
             return services;

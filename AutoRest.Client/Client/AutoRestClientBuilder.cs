@@ -1,10 +1,10 @@
 ﻿using System;
-using AutoRest.Client.Interceptors;
+using AutoRest.Client.Proxy;
 using Castle.DynamicProxy;
 
 namespace AutoRest.Client.Client
 {
-    public class AutoClientBuilder<TClient> where TClient : class
+    public class AutoRestClientBuilder<TClient> where TClient : class
     {
         private Func<RestClientConfiguration<TClient>> _configurationProvider;
         
@@ -17,11 +17,11 @@ namespace AutoRest.Client.Client
             
             return proxy.CreateInterfaceProxyWithoutTarget<TClient>(new IInterceptor[]
             {
-                new RestSharpInterceptor<TClient>(new RestClientConfigurationProvider<TClient>(configuration)),
+                new RestSharpInterceptor<TClient>(configuration.GetProvider()),
             });
         }
 
-        public AutoClientBuilder<TClient> WithConfiguration(Action<RestClientConfiguration<TClient>> configurationAction)
+        public AutoRestClientBuilder<TClient> WithConfiguration(Action<RestClientConfiguration<TClient>> configurationAction)
         {
             _configurationProvider = () =>
             {
@@ -32,7 +32,7 @@ namespace AutoRest.Client.Client
             return this;
         }
         
-        public AutoClientBuilder<TClient> WithConfiguration(RestClientConfiguration<TClient> configuration)
+        public AutoRestClientBuilder<TClient> WithConfiguration(RestClientConfiguration<TClient> configuration)
         {
             _configurationProvider = () => configuration;
             return this;
