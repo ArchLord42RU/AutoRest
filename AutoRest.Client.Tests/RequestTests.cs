@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoRest.Client.Tests.Asserts;
 using AutoRest.Client.Tests.Fixtures;
@@ -60,6 +61,15 @@ namespace AutoRest.Client.Tests
             CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Headers, "X-Header-1", headerParam);
             CustomAsserts.DictionaryContainsKeyAndValue(response.Body.Json, "key", "value");
             Assert.AreEqual(false, string.IsNullOrEmpty(response.Server));
+        }
+
+        [Test]
+        public async Task Should_Send_Parametrized_Path_Request()
+        {
+            var path = Guid.NewGuid().ToString();
+            var response = await GetClient().GetParametrizedResponse(path);
+
+            Assert.True(response.Body.Url.EndsWith(path));
         }
 
         private static IHttpBinAnythingClient GetClient()

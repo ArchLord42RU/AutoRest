@@ -36,6 +36,10 @@ namespace AutoRest.Client.Tests.HttpClients.HttpBin
         [HttpGet]
         [FromHeader("content-type")]
         Task<string> GetHeaderAsync();
+
+        [HttpGet("{path}")]
+        [FromResponse]
+        Task<AnythingResponse> GetParametrizedResponse([PathParameter] string path);
         
         [Endpoint("anything")]
         IAnythingEndpoint AnythingEndpoint { get; set; }
