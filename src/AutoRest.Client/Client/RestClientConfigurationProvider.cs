@@ -17,7 +17,7 @@ namespace AutoRest.Client.Client
             Middlewares = ScanForMiddlewares(Configuration, Configuration.ValueResolver ?? new DefaultValueResolver());
         }
 
-        internal RestClientConfigurationProvider(RestClientConfiguration configuration, IEnumerable<object> middlewares)
+        public RestClientConfigurationProvider(RestClientConfiguration configuration, IEnumerable<object> middlewares)
         {
             Configuration = configuration;
             Middlewares = middlewares;

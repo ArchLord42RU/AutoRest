@@ -41,7 +41,6 @@ namespace AutoRest.Client.Tests.HttpClients.HttpBin
         [FromResponse]
         Task<AnythingResponse> GetParametrizedResponse([ToPath] string path);
         
-        [Endpoint("anything")]
         IAnythingEndpoint AnythingEndpoint { get; set; }
     }
 }

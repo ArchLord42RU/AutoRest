@@ -14,7 +14,10 @@ namespace AutoRest.Client.Tests.Fixtures
             var builder = new AutoRestClientBuilder<IHttpBinAnythingClient>()
                 .WithConfiguration(configuration =>
                 {
-                    configuration.ClientConfiguration = client => new Uri("https://httpbin.org");
+                    configuration.ClientConfiguration = client =>
+                    {
+                        client.BaseUrl = new Uri("https://httpbin.org");
+                    };
                     setupAction?.Invoke(configuration);
                 });
 

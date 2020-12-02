@@ -5,6 +5,7 @@ using AutoRest.Client.Tests.HttpClients.HttpBin.Models;
 
 namespace AutoRest.Client.Tests.HttpClients.HttpBin
 {
+    [Route("anything")]
     public interface IAnythingEndpoint
     {
         [FromResponse]
