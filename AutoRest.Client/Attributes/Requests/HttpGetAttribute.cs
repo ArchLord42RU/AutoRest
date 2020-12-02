@@ -1,10 +1,10 @@
-﻿using System.Net.Http;
+﻿using RestSharp;
 
 namespace AutoRest.Client.Attributes.Requests
 {
     public class HttpGetAttribute: HttpMethodAttribute
     {
-        public HttpGetAttribute(string template = default) : base(HttpMethod.Get, template)
+        public HttpGetAttribute(string template = default) : base(Method.GET, template)
         {
         }
     }

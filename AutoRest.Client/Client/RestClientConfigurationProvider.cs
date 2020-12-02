@@ -1,34 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using AutoRest.Client.Processing;
-using RestSharp.Authenticators;
 
 namespace AutoRest.Client.Client
 {
     public class RestClientConfigurationProvider<TClient>
     {
-        public RestClientConfiguration<TClient> Configuration { get; }
-
-        public Uri BaseUri { get; }
-
-        public IAuthenticator Authenticator { get; }
-
-        public IWebProxy WebProxy { get; }
+        public RestClientConfiguration Configuration { get; }
 
         public IEnumerable<object> Middlewares { get; }
-        
-        public RestClientConfigurationProvider(RestClientConfiguration<TClient> configuration)
+
+        public RestClientConfigurationProvider(RestClientConfiguration configuration)
         {
             Configuration = configuration;
-            BaseUri = configuration.BaseUri;
-            Authenticator = configuration.Authenticator;
-            WebProxy = configuration.WebProxy;
             Middlewares = ScanForMiddlewares(Configuration, Configuration.ValueResolver ?? new DefaultValueResolver());
         }
 
-        private static IEnumerable<object> ScanForMiddlewares(RestClientConfiguration<TClient> configuration, IValueResolver valueResolver)
+        internal RestClientConfigurationProvider(RestClientConfiguration configuration, IEnumerable<object> middlewares)
+        {
+            Configuration = configuration;
+            Middlewares = middlewares;
+        }
+
+        private static IEnumerable<object> ScanForMiddlewares(RestClientConfiguration configuration, IValueResolver valueResolver)
         {
             var supportedTypes = new[]
             {
@@ -37,13 +32,13 @@ namespace AutoRest.Client.Client
                 typeof(AsyncRestCallMiddleware),
                 typeof(AsyncRestCallMiddleware<TClient>)
             };
-            
+
             var middlewares = configuration.Middlewares.Where(x => ImplementOneOf(x.GetType(), supportedTypes)).ToList();
-            
+
             middlewares.AddRange(from type in configuration.MiddlewareTypes
-                where ImplementOneOf(type, supportedTypes)
-                select valueResolver.Resolve(type));
-            
+                                 where ImplementOneOf(type, supportedTypes)
+                                 select valueResolver.Resolve(type));
+
             var typesFromAssemblies = configuration.AssembliesToScan
                 .Where(x => x.IsDynamic == false)
                 .SelectMany(x => x.GetTypes().Where(type => !type.IsAbstract && ImplementOneOf(type, supportedTypes)));

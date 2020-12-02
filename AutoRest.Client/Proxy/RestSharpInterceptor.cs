@@ -14,10 +14,10 @@ using RestSharp;
 
 namespace AutoRest.Client.Proxy
 {
-    internal sealed class RestSharpInterceptor<TClient>: IInterceptor
+    internal sealed class RestSharpInterceptor<TClient> : IInterceptor
     {
         private readonly RestClientConfigurationProvider<TClient> _provider;
-        
+
         private readonly IRestClient _client;
 
         private readonly IEnumerable<object> _middlewares;
@@ -27,35 +27,32 @@ namespace AutoRest.Client.Proxy
         public RestSharpInterceptor(RestClientConfigurationProvider<TClient> provider)
         {
             _provider = provider;
-            _client = new RestClient
-            {
-                Authenticator = provider.Authenticator,
-                BaseUrl = provider.BaseUri,
-                Proxy = provider.WebProxy
-            };
+            _client = new RestClient();
+            provider.Configuration.ClientConfiguration?.Invoke(_client);
 
             _middlewares = provider.Middlewares;
+            _pipeline = new Queue<Func<ExecutionContext, Task>>();
         }
-        
+
         public void Intercept(IInvocation invocation)
         {
             var prop = GetPropertyOfGetter(invocation);
-            
+
             if (prop != null)
             {
                 invocation.ReturnValue = GetEndpoint(prop, invocation);
                 return;
             }
-            
+
             var (isAsync, returnValue) = GetExecutionInfo(invocation.Method);
 
             var methodName = isAsync
                 ? nameof(ExecuteAsync)
                 : nameof(Execute);
-            
+
             var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance)?.MakeGenericMethod(returnValue)
                          ?? throw new InvalidOperationException();
-            
+
             invocation.ReturnValue = method.Invoke(this, new object[]
             {
                 invocation
@@ -68,16 +65,11 @@ namespace AutoRest.Client.Proxy
             var builderType = typeof(AutoRestClientBuilder<>).MakeGenericType(returnType);
             var builder = Activator.CreateInstance(builderType);
 
-            var configType = typeof(RestClientConfiguration<>).MakeGenericType(returnType);
-            var config = Activator.CreateInstance(configType, _provider.Configuration);
+            var providerType = typeof(RestClientConfigurationProvider<>).MakeGenericType(returnType);
+            var provider = Activator.CreateInstance(providerType, _provider.Configuration, _provider.Middlewares);
 
-            var endpointAttribute = propertyInfo.GetCustomAttribute<EndpointAttribute>();
-            
-            var baseConfig = ((RestClientConfiguration)config);
-            baseConfig.BaseUri = new Uri(ProcessingUtils.CombineUrl(baseConfig.BaseUri.ToString(), endpointAttribute?.Route ?? ""));
+            ReflectionUtils.InvokeMethod(builder, nameof(AutoRestClientBuilder<object>.WithConfiguration), provider);
 
-            ReflectionUtils.InvokeMethod(builder, nameof(AutoRestClientBuilder<object>.WithConfiguration), config);
-            
             return ReflectionUtils.InvokeMethod(builder, nameof(AutoRestClientBuilder<object>.Build));
         }
 
@@ -94,7 +86,7 @@ namespace AutoRest.Client.Proxy
             var isAsync = typeof(Task).IsAssignableFrom(invocationMethod.ReturnType);
 
             if (isAsync)
-                returnType = returnType.IsGenericType 
+                returnType = returnType.IsGenericType
                     ? returnType.GetGenericArguments().First()
                     : typeof(void);
 
@@ -105,11 +97,11 @@ namespace AutoRest.Client.Proxy
         {
             return ExecuteAsync<TResponse>(context).ConfigureAwait(false).GetAwaiter().GetResult();
         }
-        
+
         private async Task<TResponse> ExecuteAsync<TResponse>(IInvocation invocation)
         {
             _pipeline = new Queue<Func<ExecutionContext, Task>>();
-            
+
             _pipeline.Enqueue(async context =>
             {
                 context.Request = await GetRestRequest(invocation);
@@ -132,7 +124,7 @@ namespace AutoRest.Client.Proxy
                         break;
                 }
             }
-            
+
             _pipeline.Enqueue(async context =>
             {
                 context.Response = await _client.ExecuteAsync(context.Request);
@@ -165,7 +157,7 @@ namespace AutoRest.Client.Proxy
                 typeof(TResponse), default(TResponse));
 
             await ProcessingUtils.ApplyResponseParameterBindingAttributes(invocation.Method, context);
-            
+
             return (TResponse)context.ReturnValue;
         }
 
@@ -187,21 +179,21 @@ namespace AutoRest.Client.Proxy
                 bindingContext.ExecutionContext = context;
                 await ProcessingUtils.ApplyRequestParameterBindingAttributes(bindingContext.MemberAttributes, bindingContext);
             }
-            
+
             return context.RestRequest;
         }
-        
+
         private static IEnumerable<RequestParameterBindingContext> GetParameters(IInvocation invocation)
         {
             var parameters = invocation.Method.GetParameters();
-            
+
             var parametersContext = new List<RequestParameterBindingContext>();
-            
+
             for (var i = 0; i < parameters.Length; i++)
             {
                 var parameterInfo = parameters[i];
                 var parameterValue = invocation.Arguments[i];
-                
+
                 parametersContext.Add(new RequestParameterBindingContext
                 {
                     MemberType = parameterInfo.ParameterType,

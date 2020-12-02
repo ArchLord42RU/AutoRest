@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using AutoRest.Client.Tests.HttpClients.HttpBin;
-using AutoRest.Client.Tests.HttpClients.HttpBin.Models;
-using Microsoft.Extensions.DependencyInjection;
+using AutoRest.Client.Examples.Microsoft;
 
 namespace AutoRest.Client.Examples
 {
@@ -10,21 +8,19 @@ namespace AutoRest.Client.Examples
     {
         public static async Task Main(string[] args)
         {
-            var serviceCollection = new ServiceCollection();
+            Console.WriteLine("Running simple example");
+            await RequestsExample.SimpleUsage();
 
-            serviceCollection.AddAutoRestClient<IHttpBinAnythingClient>((serviceProvider, configuration) =>
-            {
-                configuration.BaseUri = new Uri("https://httpbin.org/");
-            });
+            Console.WriteLine("Running simple example (only header)");
+            await RequestsExample.SimpleUsageOnlyHeader();
             
-            var provider = serviceCollection.BuildServiceProvider();
-
-            var client = provider.GetRequiredService<IHttpBinAnythingClient>();
-
-            var result = await client.PostJson(new AnythingRequest()
-            {
-                QueryParam = "foo"
-            });
+            Console.WriteLine("Running advanced example");
+            await RequestsExample.AdvancedMapping();
+            
+            Console.WriteLine("Running MS DI example");
+            await MicrosoftDiExample.Run();
+            
+            Console.WriteLine();
         }
     }
 }

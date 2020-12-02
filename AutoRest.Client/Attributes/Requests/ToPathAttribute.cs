@@ -1,13 +1,12 @@
-﻿using System;
-using AutoRest.Client.Processing.Requests;
+﻿using AutoRest.Client.Processing.Requests;
 
 namespace AutoRest.Client.Attributes.Requests
 {
-    public class ToPathParameterAttribute: RequestParameterBindingAttribute
+    public class ToPathAttribute: RequestParameterBindingAttribute
     {
         private readonly string _paramName;
 
-        public ToPathParameterAttribute(string paramName = default)
+        public ToPathAttribute(string paramName = default)
         {
             _paramName = paramName;
         }

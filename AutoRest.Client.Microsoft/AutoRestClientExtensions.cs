@@ -14,27 +14,31 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services"></param>
         /// <param name="configuration"></param>
+        /// <param name="lifetime"></param>
         /// <typeparam name="TClient"></typeparam>
         /// <returns></returns>
         public static IServiceCollection AddAutoRestClient<TClient>(this IServiceCollection services, 
-            Action<IServiceProvider, RestClientConfiguration<TClient>> configuration)
+            Action<IServiceProvider, RestClientConfiguration> configuration, ServiceLifetime lifetime = ServiceLifetime.Transient)
             where TClient : class
         {
             if (services.Any(sd => sd.ServiceType == typeof(TClient)))
                 return services;
-            
-            services.AddOptions<RestClientConfiguration<TClient>>().Configure<IServiceProvider>((clientConfiguration, provider) 
-                => configuration(provider, clientConfiguration));
 
-            services.AddSingleton(provider =>
+            services.AddTransient(provider =>
             {
-                var config = provider.GetRequiredService<IOptions<RestClientConfiguration<TClient>>>().Value;
-                config.ValueResolver ??= new ServiceProviderValueResolver(provider);
-                return new RestClientConfigurationProvider<TClient>(config);
+                var restConfig = new RestClientConfiguration();
+
+                configuration(provider, restConfig);
+
+                restConfig.ValueResolver ??= new ServiceProviderValueResolver(provider);
+                
+                return new RestClientConfigurationProvider<TClient>(restConfig);
             });
 
-            services.AddTransient(provider => new AutoRestClientBuilder<TClient>()
-                .WithConfiguration(provider.GetRequiredService<IOptions<RestClientConfiguration<TClient>>>().Value).Build());
+            var descriptor = new ServiceDescriptor(typeof(TClient), provider => new AutoRestClientBuilder<TClient>()
+                .WithConfiguration(provider.GetRequiredService<RestClientConfigurationProvider<TClient>>()).Build(), lifetime);
+            
+            services.Add(descriptor);
 
             return services;
         }

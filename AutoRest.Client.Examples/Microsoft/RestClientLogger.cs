@@ -2,7 +2,7 @@
 using AutoRest.Client.Processing;
 using Microsoft.Extensions.Logging;
 
-namespace AutoRest.Client.Examples
+namespace AutoRest.Client.Examples.Microsoft
 {
     public class RestClientLogger: RestCallMiddleware
     {

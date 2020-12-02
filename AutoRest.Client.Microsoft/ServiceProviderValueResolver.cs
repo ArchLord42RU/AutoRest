@@ -15,7 +15,7 @@ namespace AutoRest.Client.Microsoft
 
         public object Resolve(Type objectType)
         {
-            return _provider.GetRequiredService(objectType);
+            return ActivatorUtilities.CreateInstance(_provider, objectType);
         }
     }
 }

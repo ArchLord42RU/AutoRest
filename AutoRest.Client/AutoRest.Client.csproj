@@ -2,13 +2,13 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageId>AutoRest.Client.Test</PackageId>
+        <PackageId>AutoRest.Client</PackageId>
         <Authors>Dmitriy Korolev</Authors>
         <Description>Auto rest client based on RestSharp project</Description>
         <RepositoryUrl>https://github.com/ArchLord42RU/AutoRest</RepositoryUrl>
         <AssemblyVersion>1.0.0</AssemblyVersion>
-        <PackageVersion>1.0.0</PackageVersion>
-        <Title>AutoRest.Client.Test</Title>
+        <PackageVersion>1.1.0-beta</PackageVersion>
+        <Title>AutoRest.Client</Title>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 

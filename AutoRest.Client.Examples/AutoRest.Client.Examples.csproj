@@ -6,7 +6,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AutoRest.Client.Microsoft\AutoRest.Client.Microsoft.csproj" />
-      <ProjectReference Include="..\AutoRest.Client.Tests\AutoRest.Client.Tests.csproj" />
     </ItemGroup>
 
 </Project>

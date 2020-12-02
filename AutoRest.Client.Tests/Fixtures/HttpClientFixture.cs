@@ -9,12 +9,12 @@ namespace AutoRest.Client.Tests.Fixtures
         public const string QueryParamValue = "query-param-value";
         public const string HeaderParamValue = "x-header-value";
         
-        public static IHttpBinAnythingClient GetHttpBinClient(Action<RestClientConfiguration<IHttpBinAnythingClient>> setupAction = default)
+        public static IHttpBinAnythingClient GetHttpBinClient(Action<RestClientConfiguration> setupAction = default)
         {
             var builder = new AutoRestClientBuilder<IHttpBinAnythingClient>()
                 .WithConfiguration(configuration =>
                 {
-                    configuration.BaseUri = new Uri("https://httpbin.org");
+                    configuration.ClientConfiguration = client => new Uri("https://httpbin.org");
                     setupAction?.Invoke(configuration);
                 });
 
